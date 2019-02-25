@@ -2,6 +2,7 @@
 const Phaser = require('phaser');
 const Player = require('./Player');
 const Bullet = require('./Bullet');
+const Enemy = require('./Enemy');
 
 const phaserConfig = {
   type: Phaser.AUTO,
@@ -12,11 +13,18 @@ const phaserConfig = {
 let graphics;
 let keys;
 
+let enemySpawnCounter = 5000;
+
 const p1 = new Player(phaserConfig.width / 2, phaserConfig.height / 2);
 
 const bullets = [];
 for (let i = 0; i < 20; i ++) {
   bullets.push(new Bullet());
+}
+
+const enemies = [];
+for(let i = 0; i < 20; i++){
+  enemies.push(new Enemy());
 }
 
 // Code for only firing bullet on space up
@@ -38,7 +46,13 @@ function isCircleCollision(c1, c2) {
 }
 
 function create() {
-  keys = this.input.keyboard.createCursorKeys();
+  keys = { left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT), 
+    right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT), 
+    up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP), 
+    down: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN), 
+    space: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE), 
+    a: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A), 
+    d: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D), }
   graphics = this.add.graphics({
     fillStyle: { color: 0xeeeeee },
     lineStyle: { width: 3, color: 0xeeeeee }
@@ -50,36 +64,61 @@ function update(totalTime, deltaTime) {
   p1.update(deltaTime, keys);
 
   // Keep player on screen
-  if (p1.x > phaserConfig.width + 5) {
-    p1.setX(0);
+  if (p1.x > phaserConfig.width + 20) {
+    p1.setX(-20);
   }
 
-  if (p1.x < -5) {
-    p1.setX(phaserConfig.width - 5);
+  if (p1.x < -20) {
+    p1.setX(phaserConfig.width + 20);
   }
 
-  if (p1.y > phaserConfig.height + 5) {
-    p1.setY(0);
+  if (p1.y > phaserConfig.height + 20) {
+    p1.setY(-20);
   }
 
-  if (p1.y < -5) {
-    p1.setY(phaserConfig.height - 5);
+  if (p1.y < -20) {
+    p1.setY(phaserConfig.height + 20);
   }
 
   // Fire bullet once when space key is pressed
   if (keys.space.isDown && !isLastSpaceDown) {
     const newBullet = bullets.find(b => !b.isActive);
-    if (newBullet) newBullet.activate(p1.x, p1.y, p1.forwardRot);
+    if (newBullet) newBullet.activate(p1.x, p1.y, p1. cannonRot);
   }
   isLastSpaceDown = keys.space.isDown;
 
   // Update bullets
   bullets.forEach(b => b.update(deltaTime));
+  enemies.forEach(b => b.update(deltaTime));
 
   // Draw everything
   graphics.clear();
   p1.draw(graphics);
   bullets.forEach(b => b.draw(graphics));
+  enemies.forEach(b => b.draw(graphics));
+
+  if(enemySpawnCounter <= 0){
+    const newEnemy = enemies.find(b => !b.isActive);
+    const enemyX = phaserConfig.width * Math.random();
+    const enemyY = phaserConfig.height * Math.random();
+
+    enemySpawnCounter = 5000;
+
+    if(newEnemy) newEnemy.activate(enemyX, enemyY);
+  }
+  enemySpawnCounter -= deltaTime;
+
+  //collision checker
+  bullets.forEach((bullet) =>{
+    if(bullet.isActive){
+      enemies.forEach((enemy) => {
+        if(isCircleCollision(bullet, enemy)){
+          enemy.deactivate();
+          bullet.deactivate();
+        }
+      });
+    }
+  });
 }
 
 phaserConfig.scene = {

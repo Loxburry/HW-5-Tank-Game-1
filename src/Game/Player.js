@@ -9,6 +9,7 @@ class Player {
     // movement
     this.moveSpeed = 100;
     this.forwardRot = 0;
+    this.cannonRot = 0;
     this.rotSpeed = 1;
 
     // Geometry used for rendering
@@ -20,6 +21,13 @@ class Player {
       new Phaser.Geom.Point(17, -20),
       new Phaser.Geom.Point(-17, -20),
       new Phaser.Geom.Point(-17, 10),
+    ];
+    this.cannonGeo = [
+      new Phaser.Geom.Point(-7, 25),
+      new Phaser.Geom.Point(7, 25),
+      new Phaser.Geom.Point(7, 0),
+      new Phaser.Geom.Point(-7, 0),
+      new Phaser.Geom.Point(-7, 25),
     ];
   }
 
@@ -40,6 +48,13 @@ class Player {
       this.forwardRot += this.rotSpeed * deltaTime / 1000
     }
 
+    if(keys.a.isDown){
+      this.cannonRot -= this.rotSpeed * deltaTime / 1000;
+    }
+    else if(keys.d.isDown){
+      this.cannonRot += this.rotSpeed * deltaTime / 1000;
+    }
+
     // Calculate forward vector
     const forwardX = -Math.sin(this.forwardRot);
     const forwardY = Math.cos(this.forwardRot);
@@ -57,11 +72,17 @@ class Player {
     graphics.rotate(this.forwardRot);
     graphics.strokePoints(this.baseGeo);
 
+    graphics.restore();
+    graphics.save();
+    graphics.translate(this.x, this.y);
+    
     // render cannon
+    graphics.rotate(this.cannonRot);
+    graphics.strokePoints(this.cannonGeo);
     graphics.fillCircle(0, 0, 12);
-    graphics.fillRect(-5, 0, 10, 25);
     graphics.restore();
   }
+
 }
 
 module.exports = Player;
