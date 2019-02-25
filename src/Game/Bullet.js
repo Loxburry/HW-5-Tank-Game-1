@@ -1,3 +1,8 @@
+const Phaser = require('phaser');
+
+let width = 800;
+let height = 600;
+
 class Bullet {
   constructor() {
     this.x = 0;
@@ -11,11 +16,11 @@ class Bullet {
   }
 
   activate(x, y, forward) {
-    this.x = x;
-    this.y = y;
+    this.x = x + 25*-Math.sin(forward);
+    this.y = y + 25*Math.cos(forward);
     this.forward = forward;
     this.isActive = true;
-    this.activeTime = 2000;
+    this.activeTime = 5000;
   }
 
   deactivate() {
@@ -33,6 +38,13 @@ class Bullet {
       // Deactivate bullet when it's been alive for too long 
       this.activeTime -= deltaTime;
       if (this.activeTime < 0) {
+        this.deactivate();
+      }
+      //deactivates bullets when they go off screen
+      if(this.x > width || this.x < 0){
+        this.deactivate();
+      }
+      if(this.y > height || this.y < 0){
         this.deactivate();
       }
     }

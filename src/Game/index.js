@@ -119,6 +119,7 @@ function update(totalTime, deltaTime) {
       });
     }
   });
+
 }
 
 phaserConfig.scene = {
